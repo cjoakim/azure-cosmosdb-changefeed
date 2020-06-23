@@ -7,6 +7,12 @@ The example repo contains the following:
 - Azure Function, implemented in .Net Core/C#.
 - CosmosDB test client, implemented in Python 3.
 
+<p align="center">
+  <img src="img/azure-cosmosdb-change-feed-demo.png">
+</p>
+
+---
+
 ## Azure Provisioning
 
 Create the following in Azure Portal
