@@ -112,6 +112,7 @@ Corresponding example document with CosmosDB generated attributes.
 
 ```
 SELECT VALUE COUNT(1) FROM c
+select * from c where c._ts > 1592923320
 ```
 
 ```
