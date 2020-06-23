@@ -357,3 +357,18 @@ Output:
     }
 ]
 ```
+
+### Application Created Backup Files
+
+```
+$ python main.py backup dev events Davidson 28036
+
+sql: select * from c where c.city_name = 'Davidson'
+file written: tmp/backup_davidson.json
+```
+
+```
+$ cat tmp/backup_davidson.json
+
+[{"id": "28035", "_rid": "47UeAPmUTk0GEQAAAAAAAA==", "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0GEQAAAAAAAA==/", "_etag": "\"00000fd9-0000-0100-0000-5ef23a030000\"", "location": {"type": "Point", "coordinates": [-80.8433, 35.5095]}, "postal_cd": "28035", "country_cd": "US", "city_name": "Davidson", "state_abbrv": "NC", "latitude": 35.5095, "longitude": -80.8433, "pk": "28035", "seq": 1777, "doctype": "zipcode", "timestamp": "2020-06-23 15:33:25", "epoch": 1592926405, "_lsn": 20591, "_originalId": "28035", "_attachments": "attachments/", "restored_at": 1592932867, "_ts": 1592932867}, {"id": "28036", "_rid": "47UeAPmUTk0PEQAAAAAAAA==", "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0PEQAAAAAAAA==/", "_etag": "\"000030d9-0000-0100-0000-5ef23a2e0000\"", "location": {"type": "Point", "coordinates": [-80.797854, 35.483306]}, "postal_cd": "28036", "country_cd": "US", "city_name": "Davidson", "state_abbrv": "NC", "latitude": 35.483306, "longitude": -80.797854, "pk": "28036", "seq": 1845, "doctype": "zipcode", "timestamp": "2020-06-23 15:33:46", "epoch": 1592926426, "_lsn": 20659, "_originalId": "28036", "_attachments": "attachments/", "restored_at": 1592932910, "_ts": 1592932910}]
+```

@@ -6,6 +6,7 @@ Usage:
   python main.py pre_restore_query dev events changes Raleigh
   python main.py restore dev events changes Davidson 28035 1592926509 
   python main.py restore dev events changes Davidson 28036 1592926509 
+  python main.py backup dev events Davidson
 Options:
   -h --help     Show this screen.
   --version     Show version.
@@ -35,12 +36,9 @@ def print_options(msg):
     print(arguments)
 
 def populate_cosmos(dbname, cname, max_count, do_upserts):
-    opts = dict()
-    opts['url'] = os.environ['AZURE_COSMOSDB_SQLDB_URI']
-    opts['key'] = os.environ['AZURE_COSMOSDB_SQLDB_KEY']
     populate, msg_count, zipcodes_array = True, 0, read_nc_zipcodes_data()
 
-    c = Cosmos(opts)
+    c = Cosmos(cosmos_connection_opts())
     dbproxy = c.set_db(dbname)
     ctrproxy = c.set_container(cname)
 
@@ -58,12 +56,8 @@ def populate_cosmos(dbname, cname, max_count, do_upserts):
             traceback.print_exc(file=sys.stderr)
 
 def truncate_container(dbname, cname, max_count):
-    opts = dict()
-    opts['url'] = os.environ['AZURE_COSMOSDB_SQLDB_URI']
-    opts['key'] = os.environ['AZURE_COSMOSDB_SQLDB_KEY']
     populate, msg_count, zipcodes_array = True, 0, read_nc_zipcodes_data()
-
-    c = Cosmos(opts)
+    c = Cosmos(cosmos_connection_opts())
     dbproxy = c.set_db(dbname)
     ctrproxy = c.set_container(cname)
 
@@ -82,11 +76,7 @@ def truncate_container(dbname, cname, max_count):
     print('{} documents deleted'.format(deleted_count))
 
 def pre_restore_query(dbname, target_cname, changes_cname, city):
-    opts = dict()
-    opts['url'] = os.environ['AZURE_COSMOSDB_SQLDB_URI']
-    opts['key'] = os.environ['AZURE_COSMOSDB_SQLDB_KEY']
-
-    c = Cosmos(opts)
+    c = Cosmos(cosmos_connection_opts())
     dbproxy = c.set_db(dbname)
     ctrproxy = c.set_container(changes_cname)
     sql = "select * from c where c.city_name = '{}' order by c._ts".format(city)
@@ -114,11 +104,7 @@ def pre_restore_query(dbname, target_cname, changes_cname, city):
         print(line) 
 
 def restore(dbname, target_cname, changes_cname, city, pk, as_of_epoch):
-    opts = dict()
-    opts['url'] = os.environ['AZURE_COSMOSDB_SQLDB_URI']
-    opts['key'] = os.environ['AZURE_COSMOSDB_SQLDB_KEY']
-
-    c = Cosmos(opts)
+    c = Cosmos(cosmos_connection_opts())
     dbproxy = c.set_db(dbname)
     ctrproxy = c.set_container(changes_cname)
 
@@ -143,11 +129,22 @@ def restore(dbname, target_cname, changes_cname, city, pk, as_of_epoch):
     else:
         print('no documents met the restore criteria')
 
+def backup(dbname, cname, city):
+    c = Cosmos(cosmos_connection_opts())
+    dbproxy = c.set_db(dbname)
+    ctrproxy = c.set_container(cname)
+    sql = "select * from c where c.city_name = '{}'".format(city)
+    print('sql: {}'.format(sql))
+    docs, array = c.query_container(cname, sql, True, 10000), list()
+    for doc in docs:
+        array.append(doc)
+    outfile = 'tmp/backup_{}.json'.format(city).lower()
+    write(outfile, json.dumps(array), verbose=True)
+
 def adhoc():
     c = Cosmos(cosmos_connection_opts())
     dbproxy = c.set_db('dev')
     ctrproxy = c.set_container('changes')
-
     # select * from c where ENDSWITH(c.city_name, 'Ford', false)  # true is case insensitive
     sql = "select c.city_name from c where ENDSWITH(c.city_name, 'Ford', true)"
     print('sql: {}'.format(sql))
@@ -174,7 +171,6 @@ def random_zipcode(zipcodes_array, msg_count):
     doc['timestamp'] = utc.format('YYYY-MM-DD HH:mm:s')
     doc['epoch'] = utc.timestamp
     return doc
-
 
 def read_nc_zipcodes_data():
     return read_json('data/nc_zipcodes.json')
@@ -233,6 +229,10 @@ if __name__ == "__main__":
             dbname, target_cname, changes_cname = sys.argv[2], sys.argv[3], sys.argv[4]
             city, pk, as_of_epoch = sys.argv[5], sys.argv[6], int(sys.argv[7])
             restore(dbname, target_cname, changes_cname, city, pk, as_of_epoch)
+
+        elif func == 'backup':
+            dbname, cname, city = sys.argv[2], sys.argv[3], sys.argv[4]
+            backup(dbname, cname, city)
 
         elif func == 'adhoc':
             adhoc()
