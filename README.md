@@ -268,7 +268,7 @@ We similarly query the **changes** container and confirm that the Documents for
 Davidson are incorrect in some way after 1592926509.
 
 So let's restore the Davison documents from the **last change prior to epoch timestamp** 
-1592926509:
+1592926509 using the CosmosDB-generated **_ts** attribute.
 
 ```
 $ python main.py restore dev events changes Davidson 28035 1592926509 
