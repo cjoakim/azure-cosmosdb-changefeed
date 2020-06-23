@@ -34,21 +34,26 @@ namespace CosmosSqlChangeFeedV3
             LeaseCollectionName = "leases",
             CreateLeaseCollectionIfNotExists = true)] IReadOnlyList<Document> inputList, ILogger log)
         {
+            // Use the Microsoft.Azure.Cosmos SDK to write to the output/changes container.
             var outputContainer = cosmosClient.GetContainer(databaseId, outputContainerId);
 
             foreach (Document doc in inputList)
             {
                 try
                 {
-                    doc.SetPropertyValue("_originalId", doc.Id);
+                    // Capture the Id of the source document and generate a new Id for the output doc
+                    // so as to handle both inserts and updates.
+                    var originalId = doc.Id;
+                    doc.SetPropertyValue("_originalId", originalId);
                     doc.SetPropertyValue("id", Guid.NewGuid().ToString());
                     await outputContainer.CreateItemAsync<Document>(doc);
-                    log.LogInformation("doc saved to outputContainer: " + doc);
+                    log.LogInformation("doc saved to outputContainer with originalId: " + originalId);
                 }
                 catch (Exception e)
                 {
-                    log.LogInformation("Exception pushing doc outputContainer: " + e);
-                    log.LogInformation("doc NOT saved to outputContainer: " + doc);
+                    log.LogError("Exception pushing doc outputContainer: " + e);
+                    log.LogError("doc NOT saved to outputContainer: " + doc);
+                    throw e;  // Terminate the Function invocation unsuccessfully.
                 }
             }
         }
