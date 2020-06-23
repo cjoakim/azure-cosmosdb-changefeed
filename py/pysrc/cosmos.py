@@ -1,7 +1,7 @@
 __author__  = 'Chris Joakim'
 __email__   = "chjoakim@microsoft.com"
 __license__ = "MIT"
-__version__ = "2020.06.22"
+__version__ = "2020.06.23"
 
 import json
 import os
@@ -13,20 +13,6 @@ import azure.cosmos.diagnostics as diagnostics
 import azure.cosmos.documents as documents
 import azure.cosmos.exceptions as exceptions
 import azure.cosmos.partition_key as partition_key
-
-# pip install azure-cosmos
-# https://pypi.org/project/azure-cosmos/
-# https://github.com/Azure/azure-cosmos-python
-# https://docs.microsoft.com/bs-latn-ba/azure/cosmos-db/sql-api-python-samples
-# https://github.com/Azure/azure-cosmos-python/blob/master/samples/CollectionManagement/Program.py
-
-# SDK version 4.0.0, May 20 2020
-# https://azuresdkdocs.blob.core.windows.net/$web/python/azure-cosmos/4.0.0/azure.cosmos.html
-# https://docs.microsoft.com/en-us/python/api/azure-cosmos/?view=azure-python
-# https://docs.microsoft.com/en-us/azure/cosmos-db/sql-api-sdk-python
-# https://azure.github.io/azure-sdk-for-python/
-# https://github.com/Azure/azure-sdk-for-python/tree/master/sdk/cosmos/azure-cosmos
-# x-ms-request-charge
 
 REQUEST_CHARGE_HEADER = 'x-ms-request-charge'
 ACTIVITY_ID_HEADER    = 'x-ms-activity-id'

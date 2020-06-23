@@ -1,6 +1,6 @@
 """
 Usage:
-  python main.py populate_cosmos_zipcodes dev events 10 true
+  python main.py populate_cosmos dev events 10 true
   python main.py truncate_container dev events 10
   python main.py truncate_container dev changes 10
   python main.py pre_restore_query dev events changes Raleigh
@@ -14,7 +14,7 @@ Options:
 __author__  = 'Chris Joakim'
 __email__   = "chjoakim@microsoft.com"
 __license__ = "MIT"
-__version__ = "2020.06.22"
+__version__ = "2020.06.23"
 
 import json
 import os
@@ -34,7 +34,7 @@ def print_options(msg):
     arguments = docopt(__doc__, version=__version__)
     print(arguments)
 
-def populate_cosmos_zipcodes(dbname, cname, max_count, do_upserts):
+def populate_cosmos(dbname, cname, max_count, do_upserts):
     opts = dict()
     opts['url'] = os.environ['AZURE_COSMOSDB_SQLDB_URI']
     opts['key'] = os.environ['AZURE_COSMOSDB_SQLDB_KEY']
@@ -52,6 +52,7 @@ def populate_cosmos_zipcodes(dbname, cname, max_count, do_upserts):
             if do_upserts.lower() == 'true':
                 result = c.upsert_doc(doc)
                 c.print_last_request_charge()
+                time.sleep(0.25)
         except:
             sys.stderr.write('Exception encountered')
             traceback.print_exc(file=sys.stderr)
@@ -67,15 +68,18 @@ def truncate_container(dbname, cname, max_count):
     ctrproxy = c.set_container(cname)
 
     sql = "select * from c offset 0 limit {}".format(max_count)
-    print('query; sql: {}'.format(sql))
+    print('query - db: {}, container: {}, sql: {}'.format(dbname, cname, sql))
     docs = c.query_container(cname, sql, True, max_count)
     c.print_last_request_charge()
+    deleted_count = 0
 
     for doc in docs:
         print('deleting: {}'.format(json.dumps(doc, sort_keys=False, indent=2)))
-        result = c.delete_doc(doc, doc['pk'])
-        print('delete result: {}'.format(result))
+        c.delete_doc(doc, doc['pk'])
         c.print_last_request_charge()
+        deleted_count = deleted_count + 1
+        time.sleep(0.25)
+    print('{} documents deleted'.format(deleted_count))
 
 def pre_restore_query(dbname, target_cname, changes_cname, city):
     opts = dict()
@@ -193,10 +197,10 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         func = sys.argv[1].lower()
 
-        if func == 'populate_cosmos_zipcodes':
+        if func == 'populate_cosmos':
             dbname, cname = sys.argv[2], sys.argv[3]
             max_count, do_upserts = int(sys.argv[4]), sys.argv[5]
-            populate_cosmos_zipcodes(dbname, cname, max_count, do_upserts)
+            populate_cosmos(dbname, cname, max_count, do_upserts)
 
         elif func == 'truncate_container':
             dbname, cname, max_count = sys.argv[2], sys.argv[3], int(sys.argv[4])
