@@ -86,10 +86,10 @@ The latest version 4.0.0 of the CosmosDB SDK is used in this project.
 
 ### Truncate the Containers - remove all documents from each
 
-The following deletes up to 1000 documents in each container.
+The following deletes up to 6000 documents in each container.
 ```
-$ python main.py truncate_container dev events 1000
-$ python main.py truncate_container dev changes 1000
+$ python main.py truncate_container dev events 6000
+$ python main.py truncate_container dev changes 6000
 ```
 
 ### Upsert 5000 documents in the events container
@@ -97,30 +97,250 @@ $ python main.py truncate_container dev changes 1000
 This logic executes a loop 5000 times and randomly selects and augments
 a North Carolina zip code in file **data/nc_zipcodes.json** in each iteration
 of the loop.  The zip code value (i.e. - 20836) is used as both the **id**
-and the **pk** of the upserted documents.  Since there are only 1075 zip codes 
+and the **pk** of the **upserted** documents.  Since there are only 1075 zip codes 
 in the file, some of the iterations are inserts while others are updates.
+
+Note: It is typically not recommended to explicitly set the **id** attribute
+of your CosmosDB documents, as CosmosDB will generate these values for you.
+The id values are set in this demo app simply to cause many updates to occur.
+
 
 ```
 $ python main.py populate_cosmos_zipcodes dev events 5000 true
 ```
 
-Example output:
+Example output of Document sent to CosmosDB:
 ```
+...
+{
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            -80.797854,
+            35.483306
+        ]
+    },
+    "postal_cd": "28036",
+    "country_cd": "US",
+    "city_name": "Davidson",
+    "state_abbrv": "NC",
+    "latitude": 35.483306,
+    "longitude": -80.797854,
+    "id": "28036",
+    "pk": "28036",
+    "seq": 3644,
+    "doctype": "zipcode",
+    "timestamp": "2020-06-23 15:43:28",
+    "epoch": 1592927008
+}
+...
 
 ```
 
 Corresponding example document with CosmosDB generated attributes.
 ```
-
+{
+    "location": {
+        "type": "Point",
+        "coordinates": [
+            -80.797854,
+            35.483306
+        ]
+    },
+    "postal_cd": "28036",
+    "country_cd": "US",
+    "city_name": "Davidson",
+    "state_abbrv": "NC",
+    "latitude": 35.483306,
+    "longitude": -80.797854,
+    "id": "28036",
+    "pk": "28036",
+    "seq": 3644,
+    "doctype": "zipcode",
+    "timestamp": "2020-06-23 15:43:28",
+    "epoch": 1592927008,
+    "_rid": "47UeAPmUTk0PEQAAAAAAAA==",
+    "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0PEQAAAAAAAA==/",
+    "_etag": "\"000059be-0000-0100-0000-5ef223200000\"",
+    "_attachments": "attachments/",
+    "_ts": 1592927008
+}
 ```
 
-### Query Both Collections
+---
+
+### Restore Scenario
+
+Different customers and applications will use the CosmosDB Change Feed functionality
+for different purposes.  Some customers may wish to use it in order to do 
+**surgical restores** of given documents; that's what this demonstration app implements.
+
+For example, suppose we want to restore a version of a document for Davidson, NC.
+We can then query the DB with Python as follows:
 
 ```
-SELECT VALUE COUNT(1) FROM c
-select * from c where c._ts > 1592923320
+$ python main.py pre_restore_query dev events changes Davidson
+...
+1592926406,changes,28035,28035,Davidson
+1592926416,changes,28035,28035,Davidson
+1592926427,changes,28036,28036,Davidson
+1592926489,changes,28035,28035,Davidson
+1592926494,changes,28036,28036,Davidson
+1592926509,changes,28035,28035,Davidson
+1592926612,changes,28035,28035,Davidson
+1592926627,changes,28035,28035,Davidson
+1592926844,events,28035,28035,Davidson
+1592926848,changes,28035,28035,Davidson
+1592927008,events,28036,28036,Davidson
+1592927013,changes,28036,28036,Davidson
 ```
 
+This output shows that the **events** collection has two documents for Davidson, the most recent
+versions for 28035 and 28036.
+
+The output also shows several historical/snapshots of these documents that are in the
+**changes** collection.
+
+Let's assume that a system user comes to us to inform us that the documents for Davidson are
+incorrect in some way, so let's query them in the **events** container in Azure Portal:
+
+```
+Query: SELECT * FROM c where c.city_name = 'Davidson'
+
+Output:
+[
+    {
+        "location": {
+            "type": "Point",
+            "coordinates": [
+                -80.8433,
+                35.5095
+            ]
+        },
+        "postal_cd": "28035",
+        "country_cd": "US",
+        "city_name": "Davidson",
+        "state_abbrv": "NC",
+        "latitude": 35.5095,
+        "longitude": -80.8433,
+        "id": "28035",
+        "pk": "28035",
+        "seq": 3139,
+        "doctype": "zipcode",
+        "timestamp": "2020-06-23 15:40:44",
+        "epoch": 1592926844,
+        "_rid": "47UeAPmUTk0GEQAAAAAAAA==",
+        "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0GEQAAAAAAAA==/",
+        "_etag": "\"000011bc-0000-0100-0000-5ef2227c0000\"",
+        "_attachments": "attachments/",
+        "_ts": 1592926844
+    },
+    {
+        "location": {
+            "type": "Point",
+            "coordinates": [
+                -80.797854,
+                35.483306
+            ]
+        },
+        "postal_cd": "28036",
+        "country_cd": "US",
+        "city_name": "Davidson",
+        "state_abbrv": "NC",
+        "latitude": 35.483306,
+        "longitude": -80.797854,
+        "id": "28036",
+        "pk": "28036",
+        "seq": 3644,
+        "doctype": "zipcode",
+        "timestamp": "2020-06-23 15:43:28",
+        "epoch": 1592927008,
+        "_rid": "47UeAPmUTk0PEQAAAAAAAA==",
+        "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0PEQAAAAAAAA==/",
+        "_etag": "\"000059be-0000-0100-0000-5ef223200000\"",
+        "_attachments": "attachments/",
+        "_ts": 1592927008
+    }
+]
 ```
 
+We similarly query the **changes** container and confirm that the Documents for
+Davidson are incorrect in some way after 1592926509.
+
+So let's restore the Davison documents from last change prior to epoch timestamp
+1592926509:
+
+```
+$ python main.py restore dev events changes Davidson 28035 1592926509 
+$ python main.py restore dev events changes Davidson 28036 1592926509 
+```
+
+The restore process takes only a few seconds to execute.  After it completes
+let's execute the same above query for Davidson.  It shows that the Documents
+indeed have been restored from a previous version.
+
+```
+Query: SELECT * FROM c where c.city_name = 'Davidson'
+
+Output:
+[
+    {
+        "id": "28035",
+        "_rid": "47UeAPmUTk0GEQAAAAAAAA==",
+        "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0GEQAAAAAAAA==/",
+        "_etag": "\"00000fd9-0000-0100-0000-5ef23a030000\"",
+        "location": {
+            "type": "Point",
+            "coordinates": [
+                -80.8433,
+                35.5095
+            ]
+        },
+        "postal_cd": "28035",
+        "country_cd": "US",
+        "city_name": "Davidson",
+        "state_abbrv": "NC",
+        "latitude": 35.5095,
+        "longitude": -80.8433,
+        "pk": "28035",
+        "seq": 1777,
+        "doctype": "zipcode",
+        "timestamp": "2020-06-23 15:33:25",    <--- changed
+        "epoch": 1592926405,
+        "_lsn": 20591,
+        "_originalId": "28035",
+        "_attachments": "attachments/",
+        "restored_at": 1592932867,             <--- added
+        "_ts": 1592932867
+    },
+    {
+        "id": "28036",
+        "_rid": "47UeAPmUTk0PEQAAAAAAAA==",
+        "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0PEQAAAAAAAA==/",
+        "_etag": "\"000030d9-0000-0100-0000-5ef23a2e0000\"",
+        "location": {
+            "type": "Point",
+            "coordinates": [
+                -80.797854,
+                35.483306
+            ]
+        },
+        "postal_cd": "28036",
+        "country_cd": "US",
+        "city_name": "Davidson",
+        "state_abbrv": "NC",
+        "latitude": 35.483306,
+        "longitude": -80.797854,
+        "pk": "28036",
+        "seq": 1845,
+        "doctype": "zipcode",
+        "timestamp": "2020-06-23 15:33:46",    <--- changed
+        "epoch": 1592926426,
+        "_lsn": 20659,
+        "_originalId": "28036",
+        "_attachments": "attachments/",
+        "restored_at": 1592932910,             <--- added
+        "_ts": 1592932910
+    }
+]
 ```

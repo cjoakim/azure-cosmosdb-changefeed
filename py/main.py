@@ -4,8 +4,8 @@ Usage:
   python main.py truncate_container dev events 10
   python main.py truncate_container dev changes 10
   python main.py pre_restore_query dev events changes Raleigh
-  python main.py restore dev events changes Raleigh 1592853174 
-
+  python main.py restore dev events changes Davidson 28035 1592926509 
+  python main.py restore dev events changes Davidson 28036 1592926509 
 Options:
   -h --help     Show this screen.
   --version     Show version.
@@ -113,7 +113,7 @@ def pre_restore_query(dbname, target_cname, changes_cname, city):
     for line in sorted(report_lines): 
         print(line) 
 
-def restore(dbname, target_cname, changes_cname, city, as_of_epoch):
+def restore(dbname, target_cname, changes_cname, city, pk, as_of_epoch):
     opts = dict()
     opts['url'] = os.environ['AZURE_COSMOSDB_SQLDB_URI']
     opts['key'] = os.environ['AZURE_COSMOSDB_SQLDB_KEY']
@@ -123,7 +123,7 @@ def restore(dbname, target_cname, changes_cname, city, as_of_epoch):
     ctrproxy = c.set_container(changes_cname)
 
     # Read the first matching changes doc <= the given as_of_epoch
-    sql = "select * from c where c.city_name = '{}' and c._ts <= {} order by c._ts offset 0 limit 1".format(city, as_of_epoch)
+    sql = "select * from c where c.city_name = '{}' and c.pk = '{}' and c._ts <= {} order by c._ts offset 0 limit 1".format(city, pk, as_of_epoch)
     print('query container {}; sql: {}'.format(changes_cname, sql))
     docs = c.query_container(changes_cname, sql, True, 1)
     c.print_last_request_charge()
@@ -213,8 +213,8 @@ if __name__ == "__main__":
 
         elif func == 'restore':
             dbname, target_cname, changes_cname = sys.argv[2], sys.argv[3], sys.argv[4]
-            city, as_of_epoch = sys.argv[5], int(sys.argv[6])
-            restore(dbname, target_cname, changes_cname, city, as_of_epoch)
+            city, pk, as_of_epoch = sys.argv[5], sys.argv[6], int(sys.argv[7])
+            restore(dbname, target_cname, changes_cname, city, pk, as_of_epoch)
 
         else:
             print_options('Error: invalid function: {}'.format(func))
