@@ -143,7 +143,25 @@ def restore(dbname, target_cname, changes_cname, city, pk, as_of_epoch):
     else:
         print('no documents met the restore criteria')
 
+def adhoc():
+    c = Cosmos(cosmos_connection_opts())
+    dbproxy = c.set_db('dev')
+    ctrproxy = c.set_container('changes')
+
+    # select * from c where ENDSWITH(c.city_name, 'Ford', false)  # true is case insensitive
+    sql = "select c.city_name from c where ENDSWITH(c.city_name, 'Ford', true)"
+    print('sql: {}'.format(sql))
+    docs = c.query_container('changes', sql, True, 1000)
+    for doc in docs:
+        print(json.dumps(doc, sort_keys=False, indent=2))
+
 # ========== private methods follow ==========
+
+def cosmos_connection_opts():
+    opts = dict()
+    opts['url'] = os.environ['AZURE_COSMOSDB_SQLDB_URI']
+    opts['key'] = os.environ['AZURE_COSMOSDB_SQLDB_KEY']
+    return opts
 
 def random_zipcode(zipcodes_array, msg_count):
     idx = random.randint(0, len(zipcodes_array) - 1)
@@ -216,6 +234,8 @@ if __name__ == "__main__":
             city, pk, as_of_epoch = sys.argv[5], sys.argv[6], int(sys.argv[7])
             restore(dbname, target_cname, changes_cname, city, pk, as_of_epoch)
 
+        elif func == 'adhoc':
+            adhoc()
         else:
             print_options('Error: invalid function: {}'.format(func))
     else:

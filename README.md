@@ -39,6 +39,9 @@ programming languages.  They can even be containerized.  Likewise, there are SDK
 for CosmosDB/SQL in several programming languages.  This repository demonstrates 
 just one of these many possibilities.
 
+The Azure Function code is in the **/CosmosSqlChangeFeedV3** directory in this repository,
+while the Python CosmosDB client code is in the **/py** directory.
+
 ## Data Flow in this Demonstration App
 
 - Python client CLI program generates and upserts randomized North Carolina
