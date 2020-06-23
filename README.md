@@ -167,9 +167,19 @@ Corresponding example document with CosmosDB generated attributes.
 }
 ```
 
+## Azure Function Invocations
+
+In Azure Portal, we can see that our CosmosSqlChangeFeedV3 Function has executed many
+times as a result of consuming the CosmosDB Change-Feed.  We can click into any instance
+to see the information logged by the Azure Function for that invocation.
+
+<p align="center">
+  <img src="img/azure-function-executions-in-portal.png">
+</p>
+
 ---
 
-### Restore Scenario
+## Restore Scenario
 
 Different customers and applications will use the CosmosDB Change Feed functionality
 for different purposes.  Some customers may wish to use it in order to do 
