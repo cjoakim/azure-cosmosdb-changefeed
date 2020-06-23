@@ -14,7 +14,7 @@ Create the following in Azure Portal
 1) A CosmosDB/SQL account
 2) A database named **dev** within the CosmosDB account
 3) Collections named **events** and **changes** in the **dev** database
-4) Set the partition key for both collections to **/pk**, RU value 400, and default indexing
+4) Set the partition key for both collections to **/pk**, RU value 1000, and default indexing
 5) An Azure Function App, using **.Net Core** as the Runtime Stack
 
 ## Development Environments 
@@ -53,7 +53,7 @@ just one of these many possibilities.
 $ git clone https://github.com/cjoakim/azure-cosmosdb-changefeed.git
 $ cd azure-cosmosdb-changefeed    
 $ cd py                          # <-- the python client code is in this directory
-$ ./venv.sh create               # <-- create the python virtual environment, install libs
+$ ./venv.sh create               # <-- create the python virtual environment, install PyPI libs
 $ source bin/activate            # <-- activate the python virtual environment
 $ pip list                       # <-- list the python libraries, your output should be similar
 Package         Version

@@ -7,6 +7,8 @@ source bin/activate
 
 dbname=dev
 
+date > tmp/system_test_start.txt
+
 echo 'truncating containers...'
 python main.py truncate_container $dbname events 6000  > tmp/truncate_container_events.txt
 python main.py truncate_container $dbname changes 6000 > tmp/truncate_container_changes.txt
@@ -22,4 +24,5 @@ python main.py pre_restore_query $dbname events changes Davidson  > tmp/pre_rest
 # Next: look at the pre_restore_query files and identify a document with a given _ts to restore, then:
 # python main.py restore dev events changes Raleigh 1592853174
 
+date > tmp/system_test_finish.txt
 echo 'done'
