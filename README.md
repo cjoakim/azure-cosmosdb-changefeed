@@ -267,7 +267,7 @@ Output:
 We similarly query the **changes** container and confirm that the Documents for
 Davidson are incorrect in some way after 1592926509.
 
-So let's restore the Davison documents from last change prior to epoch timestamp
+So let's restore the Davison documents from the **last change prior to epoch timestamp** 
 1592926509:
 
 ```
@@ -276,8 +276,8 @@ $ python main.py restore dev events changes Davidson 28036 1592926509
 ```
 
 The restore process takes only a few seconds to execute.  After it completes
-let's execute the same above query for Davidson.  It shows that the Documents
-indeed have been restored from a previous version.
+let's execute the same above query for Davidson in the **events** conllection.
+It shows that the Documents indeed have been restored from a previous version.
 
 ```
 Query: SELECT * FROM c where c.city_name = 'Davidson'
