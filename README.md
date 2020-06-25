@@ -1,6 +1,6 @@
 # azure-cosmosdb-changefeed
 
-An implementation of consuming the CosmosDB Change Feed stream, using another container
+An implementation of consuming the CosmosDB Change-Feed stream, using another container
 in the same database as the sink for the stream.
 
 The example repo contains the following:
@@ -10,6 +10,10 @@ The example repo contains the following:
 <p align="center">
   <img src="img/azure-cosmosdb-change-feed-demo.png">
 </p>
+
+This repo also explores two custom database restore processes:
+- Using the CosmosDB Change-Feed and the changes collection
+- Using Application-Created Backup Files
 
 ---
 
@@ -182,7 +186,7 @@ to see the information logged by the Azure Function for that invocation.
 
 ---
 
-## Restore Scenario
+## Restore Alternative 1 - from the Change-Feed changes container
 
 Different customers and applications will use the CosmosDB Change Feed functionality
 for different purposes.  Some customers may wish to use it in order to do 
@@ -358,7 +362,7 @@ Output:
 ]
 ```
 
-### Application Created Backup Files
+## Restore Alternative 2 - Application-Created Backup Files
 
 ```
 $ python main.py backup dev events Davidson 28036
@@ -372,3 +376,5 @@ $ cat tmp/backup_davidson.json
 
 [{"id": "28035", "_rid": "47UeAPmUTk0GEQAAAAAAAA==", "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0GEQAAAAAAAA==/", "_etag": "\"00000fd9-0000-0100-0000-5ef23a030000\"", "location": {"type": "Point", "coordinates": [-80.8433, 35.5095]}, "postal_cd": "28035", "country_cd": "US", "city_name": "Davidson", "state_abbrv": "NC", "latitude": 35.5095, "longitude": -80.8433, "pk": "28035", "seq": 1777, "doctype": "zipcode", "timestamp": "2020-06-23 15:33:25", "epoch": 1592926405, "_lsn": 20591, "_originalId": "28035", "_attachments": "attachments/", "restored_at": 1592932867, "_ts": 1592932867}, {"id": "28036", "_rid": "47UeAPmUTk0PEQAAAAAAAA==", "_self": "dbs/47UeAA==/colls/47UeAPmUTk0=/docs/47UeAPmUTk0PEQAAAAAAAA==/", "_etag": "\"000030d9-0000-0100-0000-5ef23a2e0000\"", "location": {"type": "Point", "coordinates": [-80.797854, 35.483306]}, "postal_cd": "28036", "country_cd": "US", "city_name": "Davidson", "state_abbrv": "NC", "latitude": 35.483306, "longitude": -80.797854, "pk": "28036", "seq": 1845, "doctype": "zipcode", "timestamp": "2020-06-23 15:33:46", "epoch": 1592926426, "_lsn": 20659, "_originalId": "28036", "_attachments": "attachments/", "restored_at": 1592932910, "_ts": 1592932910}]
 ```
+
+To restore, simply upsert the documents in a given backup file.

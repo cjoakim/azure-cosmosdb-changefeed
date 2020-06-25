@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Execute a system-test of this demonstration project.
-# Chris Joakim, Microsoft, 2020/06/23
+# Chris Joakim, Microsoft, 2020/06/25
 
 source bin/activate
 
