@@ -7,6 +7,8 @@ Usage:
   python main.py restore dev events changes Davidson 28035 1592926509 
   python main.py restore dev events changes Davidson 28036 1592926509 
   python main.py backup dev events Davidson
+
+  SELECT c.id, c.epoch, c.pk FROM c where c.epoch > 1593183000
 Options:
   -h --help     Show this screen.
   --version     Show version.
@@ -15,7 +17,7 @@ Options:
 __author__  = 'Chris Joakim'
 __email__   = "chjoakim@microsoft.com"
 __license__ = "MIT"
-__version__ = "2020.06.23"
+__version__ = "2020.06.26"
 
 import json
 import os
